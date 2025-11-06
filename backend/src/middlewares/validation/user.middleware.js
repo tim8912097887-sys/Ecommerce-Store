@@ -30,3 +30,22 @@ export const validateRefreshToken = (req,res,next) => {
     });
 
 }
+
+export const validateAccessToken = (req,res,next) => {
+    const { authorization } = req.headers;
+    if(!authorization || authorization.split(" ")[0] !== "Bearer" || !authorization.split(" ")[1]) return next(new ApiError(401,"Unathenticated"));
+    const accesstoken = authorization.split(" ")[1];
+    jwt.verify(accesstoken,process.env.ACCESS_TOKEN_SECRET,function (err,decode) {
+        if(err) return next(err);
+        req.user = decode;
+        console.log(decode);
+        return next();
+    });
+
+}
+
+export const adminCheck = (req,res,next) => {
+      const { role } = req.user;
+      if(role !== "admin") return next(new ApiError(403,"Unauthorize"));
+      return next();
+}
